@@ -1,50 +1,27 @@
 using System;
-using System.Collections.Generic;
 
-// Base Activity class
-class Activity
+public abstract class Activity
 {
+    protected int minutes; // protected to allow access in derived classes
     protected DateTime date;
-    protected int minutes;
 
-    public Activity(DateTime date, int minutes)
+    public Activity(int minutes, DateTime date)
     {
-        this.date = date;
         this.minutes = minutes;
+        this.date = date;
     }
 
-    public virtual double GetDistance()
-    {
-        return 0;
-    }
-
-    public virtual double GetSpeed()
-    {
-        return 0;
-    }
-
-    public virtual double GetPace()
-    {
-        return 0;
-    }
-
-    public virtual string GetSummary()
-    {
-        return "";
-    }
-
-    protected string FormatDate(DateTime date)
-    {
-        return date.ToString("dd MMM yyyy");
-    }
+    public abstract double GetDistance();
+    public abstract double GetSpeed();
+    public abstract double GetPace();
+    public abstract string GetSummary();
 }
 
-// Derived class for Running activity
-class Running : Activity
+public class Running : Activity
 {
-    private double distance;
+    private double distance; // distance in miles
 
-    public Running(DateTime date, int minutes, double distance) : base(date, minutes)
+    public Running(int minutes, double distance, DateTime date) : base(minutes, date)
     {
         this.distance = distance;
     }
@@ -56,7 +33,7 @@ class Running : Activity
 
     public override double GetSpeed()
     {
-        return (distance / minutes) * 60;
+        return distance / (minutes / 60.0);
     }
 
     public override double GetPace()
@@ -66,18 +43,22 @@ class Running : Activity
 
     public override string GetSummary()
     {
-        return $"{FormatDate(date)} Running ({minutes} min) - Distance {distance} miles, Speed {GetSpeed()} mph, Pace: {GetPace()} min per mile";
+        return $"{date.ToString("dd MMM yyyy")} Running ({minutes} min) - Distance: {distance} miles, Speed: {GetSpeed()} mph, Pace: {GetPace()} min per mile";
     }
 }
 
-// Derived class for Cycling activity
-class Cycling : Activity
+public class Cycling : Activity
 {
-    private double speed;
+    private double speed; // speed in mph
 
-    public Cycling(DateTime date, int minutes, double speed) : base(date, minutes)
+    public Cycling(int minutes, double speed, DateTime date) : base(minutes, date)
     {
         this.speed = speed;
+    }
+
+    public override double GetDistance()
+    {
+        return speed * (minutes / 60.0);
     }
 
     public override double GetSpeed()
@@ -85,30 +66,34 @@ class Cycling : Activity
         return speed;
     }
 
+    public override double GetPace()
+    {
+        return 60 / speed;
+    }
+
     public override string GetSummary()
     {
-        return $"{FormatDate(date)} Cycling ({minutes} min) - Speed {speed} mph";
+        return $"{date.ToString("dd MMM yyyy")} Cycling ({minutes} min) - Distance: {GetDistance()} miles, Speed: {speed} mph, Pace: {GetPace()} min per mile";
     }
 }
 
-// Derived class for Swimming activity
-class Swimming : Activity
+public class Swimming : Activity
 {
     private int laps;
 
-    public Swimming(DateTime date, int minutes, int laps) : base(date, minutes)
+    public Swimming(int minutes, int laps, DateTime date) : base(minutes, date)
     {
         this.laps = laps;
     }
 
     public override double GetDistance()
     {
-        return laps * 50 / 1000 * 0.62;
+        return laps * 50 / 1000.0 * 0.62; // distance in miles
     }
 
     public override double GetSpeed()
     {
-        return (GetDistance() / minutes) * 60;
+        return GetDistance() / (minutes / 60.0);
     }
 
     public override double GetPace()
@@ -118,7 +103,7 @@ class Swimming : Activity
 
     public override string GetSummary()
     {
-        return $"{FormatDate(date)} Swimming ({minutes} min) - Distance {GetDistance()} miles, Speed {GetSpeed()} mph, Pace: {GetPace()} min per mile";
+        return $"{date.ToString("dd MMM yyyy")} Swimming ({minutes} min) - Distance: {GetDistance()} miles, Speed: {GetSpeed()} mph, Pace: {GetPace()} min per mile";
     }
 }
 
@@ -127,17 +112,17 @@ class Program
     static void Main(string[] args)
     {
         // Create activity objects
-        Activity running = new Running(new DateTime(2022, 11, 3), 30, 3.0);
-        Activity cycling = new Cycling(new DateTime(2022, 11, 3), 45, 15.5);
-        Activity swimming = new Swimming(new DateTime(2022, 11, 3), 60, 10);
+        Running running = new Running(30, 3.0, new DateTime(2022, 11, 3));
+        Cycling cycling = new Cycling(45, 15.0, new DateTime(2022, 11, 4));
+        Swimming swimming = new Swimming(40, 10, new DateTime(2022, 11, 5));
 
-        // Add activities to a list
-        List<Activity> activities = new List<Activity>();
+        // Put activities in a list
+        var activities = new List<Activity>();
         activities.Add(running);
         activities.Add(cycling);
         activities.Add(swimming);
 
-        // Display summary for each activity
+        // Display summaries
         foreach (var activity in activities)
         {
             Console.WriteLine(activity.GetSummary());
